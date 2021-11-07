@@ -31,9 +31,8 @@ export class Usuario extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
-  clave: string;
+  clave?: string;
 
   @hasMany(() => Rol, {through: {model: () => Usuarioxrol, keyFrom: '_id_usuario', keyTo: '_id_rol'}})
   tiene_roles: Rol[];
