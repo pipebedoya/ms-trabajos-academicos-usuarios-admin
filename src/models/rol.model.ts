@@ -11,8 +11,9 @@ export class Rol extends Entity {
 
   @property({
     type: 'string',
+    required: true,
   })
-  _id_permiso?: string;
+  nombre: string;
 
   constructor(data?: Partial<Rol>) {
     super(data);
