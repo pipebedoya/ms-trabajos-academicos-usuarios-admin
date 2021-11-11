@@ -18,7 +18,7 @@ import {
   requestBody,
   response,
 } from '@loopback/rest';
-import {Credenciales, Usuario} from '../models';
+import {Credenciales, CredencialesCambioClave, CredencialesRecuperarClave, Usuario} from '../models';
 import {UsuarioRepository} from '../repositories';
 import {AdministradorDeClavesService} from '../services';
 
@@ -179,9 +179,64 @@ export class UsuarioController {
                 }
           });
           if(usuario){
-            
+            usuario.clave="";
+
           }
           return usuario;
       }
 
+
+
+    @post("/recuperar-clave",{
+      responses: {
+          '200':{
+            description: "Recuperación de clave de usuarios"
+         }
+        }
+     })
+     async recuperarClave(
+       @requestBody() credenciales: CredencialesRecuperarClave
+      ):Promise<boolean>{
+        let usuario = await this.usuarioRepository.findOne({
+        where:{
+               correo: credenciales.correo
+              }
+        });
+        if(usuario){
+          let clave= this.servicioClaves.GenerarClaveAleatoria();
+          console.log(clave);
+          let claveCifrada= this.servicioClaves.CifrarTexto(clave);
+          console.log(claveCifrada);
+          usuario.clave= claveCifrada;
+          await this.usuarioRepository.updateById(usuario._id, usuario);
+         return true;
+        }
+        return false;
+    }
+
+
+
+    @post("/cambiar-clave",{
+      responses: {
+          '200':{
+            description: "Cambio de clave de usuarios"
+         }
+        }
+     })
+     async cambiarClave(
+       @requestBody() datos: CredencialesCambioClave
+      ):Promise<boolean>{
+        let usuario = await this.usuarioRepository.findById(datos.id);
+        if(usuario){
+           if(usuario.clave == datos.clave_actual){
+            usuario.clave= datos.nueva_clave;
+            console.log(datos.nueva_clave);
+            await this.usuarioRepository.updateById(datos.id, usuario);
+            return true;
+           }else{
+              return false;
+           }
+        }
+        return false;
+    }
 }
